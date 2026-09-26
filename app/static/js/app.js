@@ -112,6 +112,7 @@
       if (!window.L) return;
       const lat = Number(mapEl.dataset.lat), lon = Number(mapEl.dataset.lon);
       const map = L.map(mapEl, { scrollWheelZoom: false }).setView([lat, lon], 15);
+      map.attributionControl.setPrefix(false); // убираем ссылку «Leaflet», подпись OpenStreetMap обязательна по лицензии
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
