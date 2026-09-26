@@ -83,35 +83,6 @@
       <div class="map" id="map" data-lat="{{ p.lat }}" data-lon="{{ p.lon }}" data-title="{{ p.address }}"></div>
     </section>
     {% endif %}
-
-    {% if p.deal_type == 'sale' and not p.is_closed %}
-    <section class="prop-section no-print" id="mortgage">
-      <h2>Ипотечный калькулятор</h2>
-      <div class="calc" data-calc data-price="{{ p.price }}">
-        <div class="calc-inputs">
-          <label class="field">
-            <span>Первоначальный взнос: <output data-out="down"></output></span>
-            <input type="range" name="down" min="10" max="90" step="5" value="20">
-          </label>
-          <label class="field">
-            <span>Срок: <output data-out="years"></output></span>
-            <input type="range" name="years" min="5" max="30" step="1" value="20">
-          </label>
-          <label class="field">
-            <span>Ставка, % годовых</span>
-            <input type="number" name="rate" min="0.1" max="40" step="0.1" value="21">
-          </label>
-        </div>
-        <div class="calc-result">
-          <span class="muted">Платёж в месяц</span>
-          <strong data-out="payment">—</strong>
-          <span class="muted">Сумма кредита: <span data-out="loan"></span></span>
-          <button class="btn btn-primary btn-sm" type="button" data-lead="question" data-property="{{ p.id }}" data-title="Помощь с ипотекой" data-sub="Подскажу банк и программу, помогу с одобрением.">Помочь с ипотекой</button>
-        </div>
-      </div>
-      <p class="muted small">Расчёт примерный. Ставку и условия уточняйте в банке — семейная и льготные программы значительно дешевле рыночной ставки.</p>
-    </section>
-    {% endif %}
   </div>
 
   <aside class="prop-aside">

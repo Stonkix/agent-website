@@ -282,14 +282,6 @@ input[type=range] { width: 100%; accent-color: var(--brand); }
 .agent img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--surface-2); }
 .share { display: flex; gap: 20px; font-size: .9rem; }
 
-.calc { display: grid; gap: 24px; background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
-@media (min-width: 700px) { .calc { grid-template-columns: 1.3fr 1fr; } }
-.calc-inputs { display: grid; gap: 18px; }
-.calc output { font-weight: 700; color: var(--ink); }
-.calc-result { background: var(--brand-soft); border-radius: var(--radius-sm); padding: 20px; display: grid; gap: 6px; align-content: center; }
-.calc-result strong { font-size: 1.9rem; letter-spacing: -0.02em; color: var(--brand); }
-.calc-result .btn { margin-top: 10px; justify-self: start; }
-
 .mobile-cta { display: none; }
 @media (max-width: 959px) {
   .prop-aside { position: static; }

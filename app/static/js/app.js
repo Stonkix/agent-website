@@ -2,7 +2,6 @@
   "use strict";
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-  const rub = (n) => Math.round(n).toLocaleString("ru-RU") + " ₽";
 
   // ---------- Мобильное меню ----------
   const burger = $(".burger");
@@ -104,32 +103,6 @@
       if (Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
       touchX = null;
     });
-  }
-
-  // ---------- Ипотечный калькулятор (аннуитет) ----------
-  const calc = $("[data-calc]");
-  if (calc) {
-    const price = Number(calc.dataset.price);
-    const out = (name) => $(`[data-out="${name}"]`, calc);
-    const yearsWord = (n) => {
-      const m10 = n % 10, m100 = n % 100;
-      if (m100 >= 11 && m100 <= 19) return "лет";
-      return m10 === 1 ? "год" : m10 >= 2 && m10 <= 4 ? "года" : "лет";
-    };
-    const update = () => {
-      const downPct = Number(calc.querySelector("[name=down]").value);
-      const years = Number(calc.querySelector("[name=years]").value);
-      const rate = Number(calc.querySelector("[name=rate]").value) / 100 / 12;
-      const loan = price * (1 - downPct / 100);
-      const n = years * 12;
-      const payment = rate > 0 ? (loan * rate) / (1 - Math.pow(1 + rate, -n)) : loan / n;
-      out("down").textContent = `${downPct}% · ${rub(price * downPct / 100)}`;
-      out("years").textContent = `${years} ${yearsWord(years)}`;
-      out("loan").textContent = rub(loan);
-      out("payment").textContent = Number.isFinite(payment) ? rub(payment) : "—";
-    };
-    calc.addEventListener("input", update);
-    update();
   }
 
   // ---------- Карта (Leaflet + OpenStreetMap) ----------
