@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block title %}{{ p.short_title }}, {{ p.address }} — {{ p.price|price }}{% if p.deal_type == 'rent' %}/мес{% endif %}{% endblock %}
+{% block description %}{{ 'Аренда' if p.deal_type == 'rent' else 'Продажа' }}: {{ p.short_title }}{% if p.floor %}, {{ p.floor }} этаж{% endif %}, {{ p.address }}. {{ p.description[:150] }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ p.price|price }}{% if p.deal_type == 'rent' %}/мес{% endif %} · {{ p.short_title }}{% endblock %}
+{% block og_description %}{{ p.address }}{% if p.floor %} · {{ p.floor }}{% if p.floors_total %}/{{ p.floors_total }}{% endif %} эт.{% endif %}. {{ p.description[:120] }}…{% endblock %}
+{% block og_image %}{% if p.cover %}{{ settings.base_url }}{{ p.cover.og }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block body_class %}page-property{% endblock %}
+
+{% block head %}
+<script type="application/ld+json">{{ json_ld|json_ld }}</script>
+{% if p.lat and p.lon %}<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container page-head">
+  <nav class="crumbs" aria-label="Навигация">
+    <a href="/">Главная</a><span>/</span><a href="/catalog?deal={{ p.deal_type }}">Объекты</a><span>/</span>{{ p.short_title }}
+  </nav>
+  <div class="prop-title">
+    <div>
+      <h1>{{ p.short_title }}</h1>
+      <p class="prop-addr">{{ p.address }}{% if p.district %} · {{ p.district }} р-н{% endif %}</p>
+    </div>
+    <div class="badges badges-inline">
+      {% if p.is_closed %}<span class="badge badge-closed">{{ STATUSES[p.status] }}</span>{% endif %}
+      {% if p.price_reduced and not p.is_closed %}<span class="badge badge-down">Снижена цена</span>{% endif %}
+      {% if p.is_new and not p.is_closed %}<span class="badge badge-new">Новинка</span>{% endif %}
+      {% for t in p.tag_list %}<span class="tag">{{ t }}</span>{% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="container prop-layout">
+  <div class="prop-main">
+    {% if p.photos %}
+    <div class="gallery" data-gallery>
+      <button class="gallery-main" type="button" data-index="0" aria-label="Открыть фото на весь экран">
+        <img src="{{ p.photos[0].full }}" alt="{{ p.short_title }} — фото 1" width="1920" height="1440" fetchpriority="high">
+        <span class="gallery-count">{{ p.photos|length }} фото</span>
+      </button>
+      {% if p.photos|length > 1 %}
+      <div class="gallery-thumbs">
+        {% for ph in p.photos %}
+        <button type="button" data-index="{{ loop.index0 }}" {% if loop.index > 5 %}class="more-hidden"{% endif %} aria-label="Фото {{ loop.index }}">
+          <img src="{{ ph.thumb }}" alt="" loading="lazy" width="800" height="600">
+          {% if loop.index == 5 and p.photos|length > 5 %}<span class="thumb-more">+{{ p.photos|length - 5 }}</span>{% endif %}
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <template data-gallery-src>{% for ph in p.photos %}<img src="{{ ph.full }}" alt="{{ p.short_title }} — фото {{ loop.index }}">{% endfor %}</template>
+    </div>
+    {% endif %}
+
+    <section class="prop-section">
+      <h2>Характеристики</h2>
+      <dl class="specs">
+        <div><dt>Тип</dt><dd>{{ PROPERTY_TYPES[p.property_type] }}, {{ DEAL_TYPES[p.deal_type]|lower }}</dd></div>
+        {% if p.rooms is not none %}<div><dt>Комнат</dt><dd>{{ 'Студия' if p.rooms == 0 else p.rooms }}</dd></div>{% endif %}
+        {% if p.area_total %}<div><dt>Общая площадь</dt><dd>{{ p.area_total|num }} м²</dd></div>{% endif %}
+        {% if p.area_living %}<div><dt>Жилая</dt><dd>{{ p.area_living|num }} м²</dd></div>{% endif %}
+        {% if p.area_kitchen %}<div><dt>Кухня</dt><dd>{{ p.area_kitchen|num }} м²</dd></div>{% endif %}
+        {% if p.floor %}<div><dt>Этаж</dt><dd>{{ p.floor }}{% if p.floors_total %} из {{ p.floors_total }}{% endif %}</dd></div>{% endif %}
+        {% if p.house_type %}<div><dt>Дом</dt><dd>{{ p.house_type }}</dd></div>{% endif %}
+        {% if p.year_built %}<div><dt>Год постройки</dt><dd>{{ p.year_built }}</dd></div>{% endif %}
+        {% if p.district %}<div><dt>Район</dt><dd>{{ p.district }}</dd></div>{% endif %}
+      </dl>
+    </section>
+
+    {% if p.description %}
+    <section class="prop-section">
+      <h2>Описание</h2>
+      <div class="prose">{{ p.description }}</div>
+    </section>
+    {% endif %}
+
+    {% if p.lat and p.lon %}
+    <section class="prop-section">
+      <h2>На карте</h2>
+      <div class="map" id="map" data-lat="{{ p.lat }}" data-lon="{{ p.lon }}" data-title="{{ p.address }}"></div>
+    </section>
+    {% endif %}
+
+    {% if p.deal_type == 'sale' and not p.is_closed %}
+    <section class="prop-section no-print" id="mortgage">
+      <h2>Ипотечный калькулятор</h2>
+      <div class="calc" data-calc data-price="{{ p.price }}">
+        <div class="calc-inputs">
+          <label class="field">
+            <span>Первоначальный взнос: <output data-out="down"></output></span>
+            <input type="range" name="down" min="10" max="90" step="5" value="20">
+          </label>
+          <label class="field">
+            <span>Срок: <output data-out="years"></output></span>
+            <input type="range" name="years" min="5" max="30" step="1" value="20">
+          </label>
+          <label class="field">
+            <span>Ставка, % годовых</span>
+            <input type="number" name="rate" min="0.1" max="40" step="0.1" value="21">
+          </label>
+        </div>
+        <div class="calc-result">
+          <span class="muted">Платёж в месяц</span>
+          <strong data-out="payment">—</strong>
+          <span class="muted">Сумма кредита: <span data-out="loan"></span></span>
+          <button class="btn btn-primary btn-sm" type="button" data-lead="question" data-property="{{ p.id }}" data-title="Помощь с ипотекой" data-sub="Подскажу банк и программу, помогу с одобрением.">Помочь с ипотекой</button>
+        </div>
+      </div>
+      <p class="muted small">Расчёт примерный. Ставку и условия уточняйте в банке — семейная и льготные программы значительно дешевле рыночной ставки.</p>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside class="prop-aside">
+    <div class="price-box">
+      <div class="price-box-price">{{ p.price|price }}{% if p.deal_type == 'rent' %}<small>/мес</small>{% endif %}</div>
+      {% if p.price_reduced %}<div class="price-old"><s>{{ p.old_price|price }}</s> <span class="badge badge-down">−{{ (p.old_price - p.price)|price }}</span></div>{% endif %}
+      {% if p.price_per_m2 %}<div class="muted">{{ p.price_per_m2|price }} за м²</div>{% endif %}
+
+      {% if p.is_closed %}
+      <p class="sold-note">Объект {{ 'сдан' if p.status == 'rented' else 'продан' }}. Подберу похожий вариант — оставьте заявку.</p>
+      <button class="btn btn-primary btn-block" type="button" data-lead="question" data-property="{{ p.id }}" data-title="Подобрать похожий">Подобрать похожий</button>
+      {% else %}
+      <button class="btn btn-primary btn-block" type="button" data-lead="viewing" data-property="{{ p.id }}" data-title="Запись на просмотр" data-sub="Предложу удобное время показа.">Записаться на просмотр</button>
+      <button class="btn btn-ghost btn-block" type="button" data-lead="question" data-property="{{ p.id }}" data-title="Вопрос по объекту">Задать вопрос</button>
+      {% endif %}
+
+      <a class="btn btn-tg btn-block" href="https://t.me/{{ settings.telegram }}" target="_blank" rel="noopener">{{ icon('telegram') }}Написать в Telegram</a>
+      {% if settings.max_url %}<a class="btn btn-max btn-block" href="{{ settings.max_url }}" target="_blank" rel="noopener">{{ icon('max') }}Связаться в Max</a>{% endif %}
+
+      <div class="agent">
+        <img src="{{ profile().photo_url }}" alt="" width="48" height="48">
+        <div><strong>{{ settings.realtor_name }}</strong><br><a href="{{ settings.phone_href }}">{{ settings.phone }}</a></div>
+      </div>
+
+      <div class="share no-print">
+        <button type="button" class="link-btn" data-share data-title="{{ p.short_title }} — {{ p.price|price }}">Поделиться</button>
+        <button type="button" class="link-btn" data-print>Скачать PDF</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% if similar %}
+<section class="section no-print">
+  <div class="container">
+    <h2>Похожие объекты</h2>
+    <div class="grid-cards">{% for p in similar %}{% include "partials/card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if not p.is_closed %}
+<div class="mobile-cta no-print">
+  <div><strong>{{ p.price|price }}</strong>{% if p.deal_type == 'rent' %}<small>/мес</small>{% endif %}</div>
+  <button class="btn btn-primary" type="button" data-lead="viewing" data-property="{{ p.id }}" data-title="Запись на просмотр">Записаться на просмотр</button>
+</div>
+{% endif %}
+
+<dialog class="lightbox" id="lightbox" aria-label="Фотографии объекта">
+  <button class="lb-close" type="button" data-close aria-label="Закрыть">×</button>
+  <button class="lb-nav lb-prev" type="button" aria-label="Предыдущее фото">‹</button>
+  <img class="lb-img" alt="">
+  <button class="lb-nav lb-next" type="button" aria-label="Следующее фото">›</button>
+  <div class="lb-counter"></div>
+</dialog>
+{% endblock %}
+
+{% block scripts %}
+{% if p.lat and p.lon %}<script src="/static/vendor/leaflet/leaflet.js" defer></script>{% endif %}
+{% endblock %}

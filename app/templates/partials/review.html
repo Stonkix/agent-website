@@ -1,0 +1,7 @@
+<figure class="review">
+  <blockquote>{{ r.text }}</blockquote>
+  <figcaption>
+    <strong>{{ r.author }}</strong>
+    {% if r.deal %}<span class="muted">{{ r.deal }}</span>{% endif %}
+  </figcaption>
+</figure>

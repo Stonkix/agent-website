@@ -1,0 +1,32 @@
+{# Карточка объекта в сетке. Контекст: p #}
+<article class="card{% if p.is_closed %} is-closed{% endif %}">
+  <a class="card-media" href="{{ p.url }}" tabindex="-1" aria-hidden="true">
+    {% if p.cover %}
+    <img src="{{ p.cover.thumb }}" alt="" loading="lazy" decoding="async" width="800" height="600">
+    {% else %}
+    <div class="noimg">Фото скоро</div>
+    {% endif %}
+    <div class="badges">
+      {% if p.is_closed %}<span class="badge badge-closed">{{ STATUSES[p.status] }}</span>{% endif %}
+      {% if p.price_reduced and not p.is_closed %}<span class="badge badge-down">Снижена цена</span>{% endif %}
+      {% if p.is_new and not p.is_closed %}<span class="badge badge-new">Новинка</span>{% endif %}
+    </div>
+    {% if p.photos|length > 1 %}<span class="card-count">{{ p.photos|length }} фото</span>{% endif %}
+  </a>
+  <div class="card-body">
+    <div class="card-price">
+      {{ p.price|price }}{% if p.deal_type == 'rent' %}<small>/мес</small>{% endif %}
+      {% if p.price_reduced %}<s>{{ p.old_price|price }}</s>{% endif %}
+    </div>
+    {% if p.price_per_m2 %}<div class="card-ppm">{{ p.price_per_m2|price }} за м²</div>{% endif %}
+    <h3 class="card-title"><a href="{{ p.url }}">{{ p.short_title }}</a></h3>
+    <p class="card-addr">{{ p.address }}</p>
+    <div class="card-meta">
+      {% if p.floor %}<span>{{ p.floor }}{% if p.floors_total %}/{{ p.floors_total }}{% endif %} эт.</span>{% endif %}
+      {% if p.district %}<span>{{ p.district }} р-н</span>{% endif %}
+    </div>
+    {% if p.tag_list %}
+    <div class="tags">{% for t in p.tag_list[:3] %}<span class="tag">{{ t }}</span>{% endfor %}</div>
+    {% endif %}
+  </div>
+</article>

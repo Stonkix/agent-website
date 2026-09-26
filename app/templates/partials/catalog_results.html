@@ -1,0 +1,28 @@
+<p class="results-count">
+  {% if total %}Найдено {{ total }} {{ total|plural('объект', 'объекта', 'объектов') }}{% else %}Ничего не найдено{% endif %}
+</p>
+
+{% if items %}
+<div class="grid-cards">
+  {% for p in items %}{% include "partials/card.html" %}{% endfor %}
+</div>
+{% else %}
+<div class="empty">
+  <p>Под такие параметры сейчас нет объектов в открытой продаже. Часть вариантов я показываю только лично — оставьте заявку, пришлю подборку.</p>
+  <button class="btn btn-primary" type="button" data-lead="question" data-title="Подбор под ваш запрос" data-sub="Опишите, что ищете — пришлю подходящие варианты, в том числе закрытые.">Подобрать под меня</button>
+</div>
+{% endif %}
+
+{% if pages > 1 %}
+<nav class="pager" aria-label="Страницы">
+  {% for n in range(1, pages + 1) %}
+    {% if n == f.page %}
+    <span class="pager-current" aria-current="page">{{ n }}</span>
+    {% else %}
+    <a href="/catalog?{{ f.query_string(page=n if n > 1 else None) }}"
+       hx-get="/catalog?{{ f.query_string(page=n if n > 1 else None) }}"
+       hx-target="#results" hx-push-url="true" hx-swap="innerHTML show:#results:top">{{ n }}</a>
+    {% endif %}
+  {% endfor %}
+</nav>
+{% endif %}

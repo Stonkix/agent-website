@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Обо мне и услуги — {{ settings.realtor_name }}, риелтор в г. {{ settings.city }}{% endblock %}
+
+{% block content %}
+<div class="container page-head">
+  <nav class="crumbs" aria-label="Навигация"><a href="/">Главная</a><span>/</span>Обо мне</nav>
+</div>
+
+{% set pr = profile() %}
+<section class="container about-hero">
+  <img class="about-photo" src="{{ pr.photo_url }}" alt="{{ settings.realtor_name }}" width="480" height="560">
+  <div>
+    <p class="eyebrow">{{ settings.realtor_title }}</p>
+    <h1>{{ settings.realtor_name }}</h1>
+    {% for para in pr.paragraphs %}
+    <p{% if loop.first %} class="lead"{% endif %}>{{ para }}</p>
+    {% endfor %}
+    <ul class="hero-facts">
+      <li><strong>{{ pr.deals_closed }}+</strong> сделок</li>
+      <li><strong>{{ pr.years_experience }}</strong> {{ pr.years_experience|plural('год', 'года', 'лет') }} опыта</li>
+    </ul>
+    <button class="btn btn-primary" type="button" data-lead="callback">Получить консультацию</button>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Услуги</h2>
+    <div class="prices">
+      <div class="price-card">
+        <h3>Продажа квартиры</h3>
+        <ul>
+          <li>Оценка и стратегия продажи</li>
+          <li>Профессиональные фото, реклама на площадках</li>
+          <li>Показы, переговоры, задаток</li>
+          <li>Подготовка документов и сопровождение сделки</li>
+        </ul>
+      </div>
+      <div class="price-card price-card-accent">
+        <h3>Покупка квартиры</h3>
+        <ul>
+          <li>Подбор, в т.ч. объекты до публикации</li>
+          <li>Торг за снижение цены</li>
+          <li>Полная юридическая проверка</li>
+          <li>Ипотека, маткапитал, сертификаты</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Проверка чистоты</h3>
+        <ul>
+          <li>Выписки ЕГРН и история переходов прав</li>
+          <li>Проверка продавца: долги, банкротство, дееспособность</li>
+          <li>Письменное заключение</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if sold %}
+<section class="section section-alt">
+  <div class="container">
+    <h2>Недавние сделки</h2>
+    <div class="grid-cards">{% for p in sold %}{% include "partials/card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if reviews %}
+<section class="section" id="reviews">
+  <div class="container">
+    <h2>Отзывы</h2>
+    <div class="reviews">{% for r in reviews %}{% include "partials/review.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

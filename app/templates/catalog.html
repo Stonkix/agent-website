@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Аренда' if f.deal == 'rent' else 'Продажа' }}: {{ (PROPERTY_TYPES[f.type] if f.type else 'недвижимость')|lower }} в г. {{ settings.city }} — {{ settings.realtor_name }}{% endblock %}
+{% block canonical %}{{ settings.base_url }}/catalog{% if f.deal == 'rent' %}?deal=rent{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container page-head">
+  <nav class="crumbs" aria-label="Навигация"><a href="/">Главная</a><span>/</span>Объекты</nav>
+  <h1>{{ 'Снять' if f.deal == 'rent' else 'Купить' }} недвижимость в г. {{ settings.city }}</h1>
+</div>
+
+<form id="filters" class="container catalog" action="/catalog" method="get"
+      hx-get="/catalog" hx-target="#results" hx-push-url="true" hx-indicator="#results"
+      hx-trigger="change, submit, input delay:700ms from:.js-money">
+  <aside class="filters" id="filters-panel">
+    <div class="filters-head">
+      <strong>Фильтры</strong>
+      <button class="filters-close" type="button" data-filters-toggle aria-label="Закрыть фильтры">×</button>
+    </div>
+
+    <div class="segmented" role="radiogroup" aria-label="Тип сделки">
+      {% for code, label in [('sale', 'Купить'), ('rent', 'Снять')] %}
+      <label><input type="radio" name="deal" value="{{ code }}" {% if f.deal == code %}checked{% endif %}><span>{{ label }}</span></label>
+      {% endfor %}
+    </div>
+
+    <label class="field">
+      <span>Тип</span>
+      <select name="type">
+        <option value="">Любой</option>
+        {% for code, label in PROPERTY_TYPES.items() %}
+        <option value="{{ code }}" {% if f.type == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <fieldset class="field">
+      <legend>Комнат</legend>
+      <div class="pills">
+        {% for value, label in room_options %}
+        <label class="pill"><input type="checkbox" name="rooms" value="{{ value }}" {% if value in f.rooms %}checked{% endif %}><span>{{ label }}</span></label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>Цена, ₽</legend>
+      <div class="range">
+        <input name="price_min" class="js-money" inputmode="numeric" placeholder="от" value="{{ f.price_min|money }}" aria-label="Цена от">
+        <input name="price_max" class="js-money" inputmode="numeric" placeholder="до" value="{{ f.price_max|money }}" aria-label="Цена до">
+      </div>
+    </fieldset>
+
+    {% if districts %}
+    <label class="field">
+      <span>Район</span>
+      <select name="district">
+        <option value="">Все районы</option>
+        {% for d in districts %}<option {% if f.district == d %}selected{% endif %}>{{ d }}</option>{% endfor %}
+      </select>
+    </label>
+    {% endif %}
+
+    <noscript><button class="btn btn-primary btn-block" type="submit">Показать</button></noscript>
+    <a class="btn btn-ghost btn-block" href="/catalog?deal={{ f.deal }}">Сбросить</a>
+    <button class="btn btn-primary btn-block filters-apply" type="button" data-filters-toggle>Показать объекты</button>
+  </aside>
+
+  <section class="catalog-main">
+    <div class="toolbar">
+      <button class="btn btn-ghost btn-sm filters-open" type="button" data-filters-toggle>Фильтры</button>
+      <label class="sort">
+        <span class="visually-hidden">Сортировка</span>
+        <select name="sort">
+          {% for code, (label, _) in sorts.items() %}
+          <option value="{{ code }}" {% if f.sort == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div id="results" aria-live="polite">
+      {% include "partials/catalog_results.html" %}
+    </div>
+  </section>
+</form>
+{% endblock %}

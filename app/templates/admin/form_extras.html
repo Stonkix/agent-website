@@ -1,0 +1,22 @@
+{# Карта для метки и drag-n-drop фото — только в форме объекта #}
+{% if model_view.identity == "property" %}
+<link rel="stylesheet" href="/static/css/admin.css?v={{ static_v }}">
+<script>
+  window.ADMIN_CFG = {
+    city: {{ settings.city|tojson }},
+    center: [{{ settings.map_center_lat }}, {{ settings.map_center_lon }}],
+  };
+</script>
+{% if obj is defined and obj.photos %}
+<template id="existing-photos">
+  {% for ph in obj.photos %}
+  <div class="dz-item dz-photo" data-id="{{ ph.id }}" draggable="true">
+    <img src="{{ ph.thumb }}" alt="" draggable="false">
+    <button type="button" class="dz-remove" title="Удалить фото">×</button>
+  </div>
+  {% endfor %}
+</template>
+{% endif %}
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU{% if settings.yandex_maps_api_key %}&apikey={{ settings.yandex_maps_api_key|urlencode }}{% endif %}"></script>
+<script src="/static/js/admin.js?v={{ static_v }}"></script>
+{% endif %}

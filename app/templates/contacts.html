@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Контакты — {{ settings.realtor_name }}, риелтор в г. {{ settings.city }}{% endblock %}
+
+{% block content %}
+<div class="container page-head">
+  <nav class="crumbs" aria-label="Навигация"><a href="/">Главная</a><span>/</span>Контакты</nav>
+  <h1>Контакты</h1>
+</div>
+
+<section class="container split contacts">
+  <div>
+    <div class="contact-list">
+      <a class="contact-item" href="{{ settings.phone_href }}">
+        <span class="muted">Телефон</span><strong>{{ settings.phone }}</strong>
+      </a>
+      <a class="contact-item" href="https://t.me/{{ settings.telegram }}" target="_blank" rel="noopener">
+        <span class="muted">Telegram</span><strong>@{{ settings.telegram }}</strong>
+      </a>
+      {% if settings.max_url %}
+      <a class="contact-item" href="{{ settings.max_url }}" target="_blank" rel="noopener">
+        <span class="muted">Max</span><strong>Связаться в Max</strong>
+      </a>
+      {% endif %}
+      <a class="contact-item" href="mailto:{{ settings.email }}">
+        <span class="muted">E-mail</span><strong>{{ settings.email }}</strong>
+      </a>
+      {% if settings.office_address %}
+      <div class="contact-item">
+        <span class="muted">Офис</span><strong>{{ settings.office_address }}</strong>
+      </div>
+      {% endif %}
+    </div>
+    <p class="muted small">Работаю ежедневно с 9:00 до 21:00. Встречи и показы — по договорённости.</p>
+    <p class="muted small">{{ settings.legal_info }}</p>
+  </div>
+  <div class="panel">
+    <h2>Напишите мне</h2>
+    {% with kind="question", show_message=True, message_label="Ваш вопрос" %}{% include "partials/lead_form.html" %}{% endwith %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script type="application/ld+json">{{ {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  "name": settings.site_name,
+  "url": settings.base_url,
+  "telephone": settings.phone,
+  "email": settings.email,
+  "image": settings.base_url ~ "/static/img/og-default.jpg",
+  "address": {"@type": "PostalAddress", "addressLocality": settings.city, "streetAddress": settings.office_address, "addressCountry": "RU"},
+  "areaServed": settings.city
+}|json_ld }}</script>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-text">
+      <p class="eyebrow">{{ settings.realtor_title }} · {{ settings.city }}</p>
+      <h1>Купить, продать или&nbsp;снять квартиру без&nbsp;нервов и&nbsp;скрытых комиссий</h1>
+      <p class="lead">Подберу варианты под ваш бюджет, проверю юридическую чистоту и&nbsp;проведу сделку до получения ключей. Стоимость услуг фиксируется в договоре заранее.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="/catalog">Смотреть объекты</a>
+        <button class="btn btn-ghost btn-lg" type="button" data-lead="valuation" data-title="Бесплатная оценка квартиры" data-sub="Назову реальную рыночную цену и срок продажи.">Оценить мою квартиру</button>
+      </div>
+      <ul class="hero-facts">
+        {% set pr = profile() %}
+        <li><strong>{{ pr.years_experience }}</strong> {{ pr.years_experience|plural('год', 'года', 'лет') }} на рынке</li>
+        <li><strong>{{ pr.deals_closed }}+</strong> закрытых сделок</li>
+        <li><strong>0 ₽</strong> за консультацию</li>
+      </ul>
+    </div>
+    {% include "partials/hero_art.html" %}
+
+  </div>
+</section>
+
+{% if featured %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Актуальные предложения</h2>
+      <a class="link-arrow" href="/catalog">Все объекты →</a>
+    </div>
+    <div class="grid-cards">
+      {% for p in featured %}{% include "partials/card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section-alt">
+  <div class="container">
+    <h2>Почему со мной спокойно</h2>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-num">01</div>
+        <h3>Проверка документов</h3>
+        <p>Выписка ЕГРН, история перехода прав, обременения, прописанные, банкротство продавца — до внесения задатка.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">02</div>
+        <h3>Честная цена</h3>
+        <p>Оцениваю по реальным сделкам, а не по объявлениям. Объект не «висит» на рынке месяцами.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">03</div>
+        <h3>Ипотека и сертификаты</h3>
+        <p>Помогу с одобрением в банке-партнёре, маткапиталом и субсидиями. Считаю платёж заранее.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">04</div>
+        <h3>Фиксированная стоимость</h3>
+        <p>Цена услуги прописана в договоре. Никаких «вдруг появившихся» комиссий на сделке.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Как мы работаем</h2>
+    <ol class="steps">
+      <li><strong>Заявка</strong><span>Созваниваемся, обсуждаем задачу и бюджет — бесплатно.</span></li>
+      <li><strong>Подбор или оценка</strong><span>Присылаю подборку или готовлю объект к продаже: фото, описание, реклама.</span></li>
+      <li><strong>Просмотры</strong><span>Организую показы и торгуюсь за ваши интересы.</span></li>
+      <li><strong>Сделка</strong><span>Проверяю документы, готовлю договор, сопровождаю в банке и МФЦ.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section-accent" id="valuation">
+  <div class="container split">
+    <div>
+      <h2>Узнайте, сколько стоит ваша квартира</h2>
+      <p class="lead">Бесплатно подготовлю оценку по реальным сделкам в вашем доме и районе и расскажу, за какой срок её реально продать.</p>
+    </div>
+    <div class="panel">
+      {% with kind="valuation", show_message=True, message_label="Адрес и площадь", message_placeholder="ул. Баумана, 10, 2-комн., 54 м²", button_text="Получить оценку" %}
+        {% include "partials/lead_form.html" %}
+      {% endwith %}
+    </div>
+  </div>
+</section>
+
+{% if reviews %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Отзывы клиентов</h2>
+      <a class="link-arrow" href="/about#reviews">Все отзывы →</a>
+    </div>
+    <div class="reviews">
+      {% for r in reviews %}{% include "partials/review.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

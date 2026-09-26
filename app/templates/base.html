@@ -1,0 +1,109 @@
+{% from "partials/icons.html" import icon %}<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set page_title %}{% block title %}{{ settings.realtor_name }} — {{ settings.realtor_title|lower }}, недвижимость в г. {{ settings.city }}{% endblock %}{% endset %}
+  {% set page_description %}{% block description %}Покупка, продажа и аренда квартир и домов в г. {{ settings.city }}. Подбор, проверка юридической чистоты, сопровождение сделки.{% endblock %}{% endset %}
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ page_description|trim }}">
+  <link rel="canonical" href="{% block canonical %}{{ settings.base_url }}{{ request.url.path }}{% endblock %}">
+
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="{{ settings.site_name }}">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="{% block og_title %}{{ page_title|trim }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ page_description|trim }}{% endblock %}">
+  <meta property="og:url" content="{{ settings.base_url }}{{ request.url.path }}">
+  <meta property="og:image" content="{% block og_image %}{{ settings.base_url }}/static/img/og-default.jpg{% endblock %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#1f4a3f">
+  <link rel="stylesheet" href="/static/css/app.css?v={{ static_v }}">
+  {% block head %}{% endblock %}
+  <script src="/static/vendor/htmx.min.js" defer></script>
+  <script src="/static/js/app.js?v={{ static_v }}" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip" href="#main">К содержимому</a>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="logo" href="/">
+        <span class="logo-mark" aria-hidden="true">{{ settings.realtor_name[:1] }}</span>
+        <span class="logo-text">
+          <strong>{{ settings.realtor_name }}</strong>
+          <small>{{ settings.realtor_title }} · {{ settings.city }}</small>
+        </span>
+      </a>
+      <nav class="main-nav" id="main-nav" aria-label="Основное меню">
+        {% set path = request.url.path %}
+        <a href="/catalog" {% if path.startswith('/catalog') %}aria-current="page"{% endif %}>Объекты</a>
+        <a href="/about" {% if path == '/about' %}aria-current="page"{% endif %}>Обо мне и услуги</a>
+        <a href="/contacts" {% if path == '/contacts' %}aria-current="page"{% endif %}>Контакты</a>
+        <a class="nav-phone" href="{{ settings.phone_href }}">{{ settings.phone }}</a>
+      </nav>
+      <div class="header-actions">
+        <a class="header-phone" href="{{ settings.phone_href }}">{{ settings.phone }}</a>
+        <button class="btn btn-primary btn-sm" data-lead="callback" type="button">Перезвоните мне</button>
+        <button class="burger" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Меню">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <div class="footer-name">{{ settings.realtor_name }}</div>
+        <p class="muted">{{ settings.realtor_title }}, {{ settings.city }}.<br>{{ settings.legal_info }}</p>
+      </div>
+      <div>
+        <div class="footer-h">Разделы</div>
+        <a href="/catalog?deal=sale">Купить</a>
+        <a href="/catalog?deal=rent">Снять</a>
+        <a href="/about">Услуги</a>
+        <a href="/contacts">Контакты</a>
+      </div>
+      <div>
+        <div class="footer-h">Связаться</div>
+        <a class="footer-contact" href="{{ settings.phone_href }}">{{ icon('phone') }}{{ settings.phone }}</a>
+        <a class="footer-contact" href="https://t.me/{{ settings.telegram }}" target="_blank" rel="noopener">{{ icon('telegram') }}Telegram</a>
+        {% if settings.max_url %}<a class="footer-contact" href="{{ settings.max_url }}" target="_blank" rel="noopener">{{ icon('max') }}Max</a>{% endif %}
+        <a class="footer-contact" href="mailto:{{ settings.email }}">{{ icon('mail') }}{{ settings.email }}</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© {{ now().year }} {{ settings.realtor_name }}</span>
+      <a href="/privacy">Политика конфиденциальности</a>
+    </div>
+  </footer>
+
+  <dialog class="lead-dialog" id="lead-dialog" aria-labelledby="lead-dialog-title">
+    <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
+    <h2 id="lead-dialog-title">Оставьте заявку</h2>
+    <p class="muted" id="lead-dialog-sub">Перезвоню в течение 15 минут в рабочее время.</p>
+    <div id="lead-dialog-body"></div>
+  </dialog>
+  <template id="lead-form-tpl">
+    {% with kind="callback", show_message=True %}{% include "partials/lead_form.html" %}{% endwith %}
+  </template>
+
+  {% block scripts %}{% endblock %}
+  {% if settings.yandex_metrika_id %}
+  <script>
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
+    ym({{ settings.yandex_metrika_id|int }}, "init", {clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true});
+  </script>
+  {% endif %}
+</body>
+</html>
