@@ -93,6 +93,8 @@ def _choices(d: dict[str, str]) -> list[tuple[str, str]]:
 class PropertyAdmin(ModelView, model=Property):
     name = "Объект"
     name_plural = "Объекты"
+    add_label = "Добавить объект"
+    edit_label = "Редактировать объект"
     icon = "fa-solid fa-house"
     page_size = 50
 
@@ -131,7 +133,10 @@ class PropertyAdmin(ModelView, model=Property):
         Property.deal_type: lambda m, a: DEAL_TYPES.get(m.deal_type, m.deal_type),
         Property.property_type: lambda m, a: PROPERTY_TYPES.get(m.property_type, m.property_type),
         Property.status: lambda m, a: STATUSES.get(m.status, m.status),
+        Property.created_at: lambda m, a: f"{m.created_at:%d.%m.%Y %H:%M}" if m.created_at else "",
+        Property.updated_at: lambda m, a: f"{m.updated_at:%d.%m.%Y %H:%M}" if m.updated_at else "",
     }
+    column_details_exclude_list = [Property.photos]  # фото видны в форме редактирования
     column_labels = {
         Property.title: "Заголовок",
         Property.deal_type: "Сделка",
@@ -156,6 +161,7 @@ class PropertyAdmin(ModelView, model=Property):
         Property.is_featured: "На главную",
         Property.is_published: "Опубликован",
         Property.created_at: "Добавлен",
+        Property.updated_at: "Изменён",
         Property.photos: "Фото",
     }
     form_excluded_columns = [Property.photos, Property.created_at, Property.updated_at]
@@ -245,6 +251,7 @@ class PropertyAdmin(ModelView, model=Property):
 class LeadAdmin(ModelView, model=Lead):
     name = "Заявка"
     name_plural = "Заявки"
+    edit_label = "Заявка"
     icon = "fa-solid fa-phone"
     can_create = False
 
@@ -268,18 +275,25 @@ class LeadAdmin(ModelView, model=Lead):
 class ReviewAdmin(ModelView, model=Review):
     name = "Отзыв"
     name_plural = "Отзывы"
+    add_label = "Добавить отзыв"
+    edit_label = "Редактировать отзыв"
     icon = "fa-solid fa-comment"
 
     column_list = [Review.author, Review.deal, Review.is_published, Review.created_at]
     column_labels = {
         Review.author: "Автор",
         Review.text: "Текст",
-        Review.deal: "Сделка (подпись)",
+        Review.deal: "Подпись",
         Review.is_published: "Опубликован",
         Review.created_at: "Дата",
     }
     form_excluded_columns = [Review.created_at]
-    form_args = {"text": {"show_chars_count": False}}
+    form_args = {
+        "text": {"show_chars_count": False},
+        "deal": {"description": "Необязательно. Например: «Продажа 2-комн. квартиры» или «Покупка в ипотеку»."},
+    }
+    column_formatters = {Review.created_at: lambda m, a: f"{m.created_at:%d.%m.%Y %H:%M}" if m.created_at else ""}
+    column_formatters_detail = column_formatters
 
 
 def _int_in(value: object, lo: int, hi: int) -> int | None:
