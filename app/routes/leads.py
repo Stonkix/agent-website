@@ -49,7 +49,7 @@ def create_lead(
     def respond(template: str, **ctx):
         if is_htmx:
             return templates.TemplateResponse(request, template, form | ctx)
-        return RedirectResponse("/thanks" if template.endswith("success.html") else "/contacts", 303)
+        return RedirectResponse("/thanks" if template.endswith("success.html") else "/about#contacts", 303)
 
     if website:
         return respond("partials/lead_success.html")  # боту делаем вид, что всё ок

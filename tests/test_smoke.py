@@ -40,7 +40,7 @@ def client():
         yield c
 
 
-@pytest.mark.parametrize("url", ["/", "/catalog", "/about", "/contacts", "/privacy", "/sitemap.xml", "/robots.txt"])
+@pytest.mark.parametrize("url", ["/", "/catalog", "/about", "/privacy", "/sitemap.xml", "/robots.txt"])
 def test_pages_ok(client, url):
     assert client.get(url).status_code == 200
 
@@ -75,6 +75,13 @@ def test_property_url_is_numeric_id(client):
     page = client.get("/catalog/1")
     assert 'property="og:image"' in page.text and "_og.jpg" in page.text
     assert "RealEstateListing" in page.text
+
+
+def test_contacts_merged_into_about(client):
+    r = client.get("/contacts", follow_redirects=False)
+    assert r.status_code == 301 and r.headers["location"] == "/about#contacts"
+    about = client.get("/about").text
+    assert 'id="contacts"' in about and 'name="phone"' in about  # контакты и форма на странице «Обо мне»
 
 
 def test_unpublished_is_404(client):

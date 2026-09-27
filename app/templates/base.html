@@ -41,8 +41,7 @@
       <nav class="main-nav" id="main-nav" aria-label="Основное меню">
         {% set path = request.url.path %}
         <a href="/catalog" {% if path.startswith('/catalog') %}aria-current="page"{% endif %}>Объекты</a>
-        <a href="/about" {% if path == '/about' %}aria-current="page"{% endif %}>Обо мне и услуги</a>
-        <a href="/contacts" {% if path == '/contacts' %}aria-current="page"{% endif %}>Контакты</a>
+        <a href="/about" {% if path == '/about' %}aria-current="page"{% endif %}>Обо мне и контакты</a>
         <a class="nav-phone" href="{{ settings.phone_href }}">{{ settings.phone }}</a>
       </nav>
       <div class="header-actions">
@@ -69,8 +68,8 @@
         <div class="footer-h">Разделы</div>
         <a href="/catalog?deal=sale">Купить</a>
         <a href="/catalog?deal=rent">Снять</a>
-        <a href="/about">Услуги</a>
-        <a href="/contacts">Контакты</a>
+        <a href="/about#services">Услуги</a>
+        <a href="/about#contacts">Контакты</a>
       </div>
       <div>
         <div class="footer-h">Связаться</div>

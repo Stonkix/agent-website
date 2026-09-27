@@ -11,7 +11,7 @@ from app.models import Property
 
 router = APIRouter()
 
-STATIC_PAGES = [("/", "1.0"), ("/catalog", "0.9"), ("/about", "0.6"), ("/contacts", "0.6")]
+STATIC_PAGES = [("/", "1.0"), ("/catalog", "0.9"), ("/about", "0.6")]
 
 
 @router.get("/sitemap.xml")

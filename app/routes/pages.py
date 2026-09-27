@@ -227,9 +227,10 @@ def about(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request, "about.html", {"reviews": reviews, "sold": sold})
 
 
-@router.get("/contacts", response_class=HTMLResponse)
-def contacts(request: Request):
-    return templates.TemplateResponse(request, "contacts.html")
+@router.get("/contacts")
+def contacts():
+    # контакты теперь на странице «Обо мне»; старые ссылки ведут туда
+    return RedirectResponse("/about#contacts", status_code=301)
 
 
 @router.get("/privacy", response_class=HTMLResponse)

@@ -305,7 +305,8 @@ input[type=range] { width: 100%; accent-color: var(--brand); }
 .price-card-price { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
 .price-card-price small { font-size: .9rem; font-weight: 500; color: var(--muted); }
 .price-card ul { padding-left: 1.1em; margin: 0; color: #3b423e; display: grid; gap: 6px; }
-.contacts { padding-bottom: 72px; align-items: start; }
+.contacts { align-items: start; }
+section[id] { scroll-margin-top: 72px; } /* якорь не прячется под липкой шапкой */
 .contact-list { display: grid; gap: 12px; margin-bottom: 24px; }
 .contact-item { display: grid; background: var(--surface); padding: 16px 20px; border-radius: var(--radius); text-decoration: none; color: var(--ink); box-shadow: var(--shadow); }
 .contact-item strong { font-size: 1.15rem; }
