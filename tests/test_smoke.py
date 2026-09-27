@@ -276,3 +276,20 @@ def test_admin_password_change(client):
         admin_password.reset()
         login_guard.reset()
     _login(client)
+
+
+def test_heic_upload(client):
+    """Фото с iPhone (HEIC) принимаются и конвертируются в WebP."""
+    _login(client)
+    buf = BytesIO()
+    Image.new("RGB", (1600, 1200), "purple").save(buf, "HEIF")
+    data = {"title": "Фото с айфона", "deal_type": "sale", "property_type": "flat", "status": "active",
+            "price": "1000000", "address": "x", "is_published": "y", "save": "Сохранить"}
+    r = client.post("/admin/property/create", data=data, follow_redirects=False,
+                    files=[("photos_upload", ("IMG_0001.HEIC", buf.getvalue(), "image/heic"))])
+    assert r.status_code == 302
+    with SessionLocal() as db:
+        p = db.query(Property).filter_by(title="Фото с айфона").one()
+        assert len(p.photos) == 1
+        ph = p.photos[0]
+    assert Image.open(images.property_dir(p.id) / f"{ph.name}_full.webp").format == "WEBP"

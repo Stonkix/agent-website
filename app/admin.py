@@ -172,7 +172,7 @@ class PropertyAdmin(ModelView, model=Property):
         form_class = await super().scaffold_form(rules)
         form_class.photos_upload = MultipleFileField(
             "Фото",
-            render_kw={"accept": "image/*", "multiple": True},
+            render_kw={"accept": "image/*,.heic,.heif", "multiple": True},
         )
         return form_class
 
