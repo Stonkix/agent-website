@@ -251,3 +251,28 @@ def test_login_lockout_after_five_failures(client):
     finally:
         login_guard.reset()
     _login(client)  # после снятия блокировки вход снова работает
+
+
+def test_admin_password_change(client):
+    from app import admin_password, login_guard
+    from app.config import settings
+
+    _login(client)
+    try:
+        bad = client.post("/admin/password", data={"current": "wrong", "new": "новый-пароль-1", "repeat": "новый-пароль-1"})
+        assert "Текущий пароль указан неверно" in bad.text
+        mismatch = client.post("/admin/password", data={"current": settings.admin_password, "new": "новый-пароль-1", "repeat": "другой-пароль"})
+        assert "не совпадают" in mismatch.text
+        r = client.post("/admin/password", data={"current": settings.admin_password, "new": "новый-пароль-1", "repeat": "новый-пароль-1"},
+                        follow_redirects=False)
+        assert r.status_code == 303
+        assert client.get("/admin/property/list", follow_redirects=False).status_code == 200  # текущая сессия жива
+
+        other = TestClient(app)
+        assert other.post("/admin/login", data={"username": settings.admin_username, "password": settings.admin_password}).status_code == 400
+        assert other.post("/admin/login", data={"username": settings.admin_username, "password": "новый-пароль-1"},
+                          follow_redirects=False).status_code == 302
+    finally:
+        admin_password.reset()
+        login_guard.reset()
+    _login(client)

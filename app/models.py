@@ -233,3 +233,13 @@ class LoginAttempt(Base):
     failures: Mapped[int] = mapped_column(default=0)
     last_failure_at: Mapped[datetime | None] = mapped_column(default=None)
     blocked_until: Mapped[datetime | None] = mapped_column(default=None)
+
+
+class AdminCredential(Base):
+    """Хеш пароля панели управления после смены в разделе «Смена пароля» (см. app/admin_password.py)."""
+
+    __tablename__ = "admin_credentials"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    password_hash: Mapped[str] = mapped_column(String(200))
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)

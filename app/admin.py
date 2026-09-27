@@ -15,7 +15,7 @@ from starlette.responses import RedirectResponse
 from wtforms import MultipleFileField, SelectField
 from wtforms.widgets import HiddenInput
 
-from app import images, login_guard, profile as profile_store
+from app import admin_password, images, login_guard, profile as profile_store
 from app.config import BASE_DIR, settings
 from app.db import SessionLocal, engine
 from app.models import (
@@ -58,9 +58,8 @@ class AdminAuth(AuthenticationBackend):
             )
 
         form = await request.form()
-        ok = _same(form.get("username"), settings.admin_username) & _same(
-            form.get("password"), settings.admin_password
-        )
+        password_ok = await anyio.to_thread.run_sync(admin_password.check, str(form.get("password") or ""))
+        ok = _same(form.get("username"), settings.admin_username) & password_ok
         if not ok:
             await asyncio.sleep(1)  # замедляем перебор пароля
             left, until = login_guard.register_failure(ip)
@@ -75,6 +74,7 @@ class AdminAuth(AuthenticationBackend):
 
         login_guard.reset(ip)
         request.session["admin"] = True
+        request.session["pv"] = admin_password.version()
         return True
 
     async def logout(self, request: Request) -> bool:
@@ -82,7 +82,8 @@ class AdminAuth(AuthenticationBackend):
         return True
 
     async def authenticate(self, request: Request) -> bool:
-        return bool(request.session.get("admin"))
+        # после смены пароля сессии со старой меткой перестают действовать
+        return bool(request.session.get("admin")) and request.session.get("pv") == admin_password.version()
 
 
 def _choices(d: dict[str, str]) -> list[tuple[str, str]]:
@@ -343,6 +344,28 @@ class PortfolioAdmin(BaseView):
             )
 
 
+class PasswordAdmin(BaseView):
+    name = "Смена пароля"
+    icon = "fa-solid fa-key"
+
+    @expose("/password", methods=["GET", "POST"])
+    async def password(self, request: Request):
+        error = None
+        if request.method == "POST":
+            form = await request.form()
+            current, new, repeat = (str(form.get(k, "")) for k in ("current", "new", "repeat"))
+            error = await anyio.to_thread.run_sync(admin_password.validate_new, current, new, repeat)
+            if not error:
+                await anyio.to_thread.run_sync(admin_password.set_password, new)
+                request.session["pv"] = admin_password.version()  # текущая сессия остаётся, остальные — нет
+                return RedirectResponse(request.url.path + "?saved=1", status_code=303)
+        return await self.templates.TemplateResponse(
+            request,
+            "admin/password.html",
+            {"error": error, "saved": request.query_params.get("saved") == "1", "min_length": admin_password.MIN_LENGTH},
+        )
+
+
 def setup_admin(app) -> Admin:
     auth = AdminAuth(secret_key=settings.secret_key, https_only=not settings.debug)
     admin = Admin(
@@ -359,4 +382,5 @@ def setup_admin(app) -> Admin:
     for view in (PropertyAdmin, LeadAdmin, ReviewAdmin):
         admin.add_view(view)
     admin.add_base_view(PortfolioAdmin)
+    admin.add_base_view(PasswordAdmin)
     return admin
