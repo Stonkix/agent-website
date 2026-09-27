@@ -364,3 +364,20 @@ dialog::backdrop { background: rgb(20 24 22 / 55%); backdrop-filter: blur(2px); 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- Телефон ---------- */
+.header-call { display: none; place-items: center; width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--brand); }
+@media (max-width: 960px) { .header-call { display: grid; } }
+@media (max-width: 560px) {
+  .hero-cta .btn { flex: 1 1 100%; }
+  .hero-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: .85rem; }
+  .hero-facts strong { font-size: 1.35rem; }
+  .section-head { flex-wrap: wrap; }
+}
+/* страница объекта: цена и кнопки сразу под фото, характеристики — ниже */
+@media (max-width: 959px) {
+  .prop-main { display: contents; }
+  .prop-main > .gallery { order: 1; }
+  .prop-aside { order: 2; }
+  .prop-main > .prop-section { order: 3; margin-top: 0; }
+}

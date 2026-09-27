@@ -110,12 +110,19 @@ class PropertyAdmin(ModelView, model=Property):
     column_sortable_list = [Property.id, Property.price, Property.created_at]
     column_default_sort = [(Property.id, True)]
     column_formatters = {
+        # превью и название в одном блоке с минимальной шириной — текст не наезжает на соседние колонки
         Property.title: lambda m, a: Markup(
-            '<img src="{}" style="height:40px;width:60px;object-fit:cover;border-radius:4px;'
-            'margin-right:8px;vertical-align:middle">{}'.format(m.cover.thumb, escape(m.title))
-            if m.cover
-            else escape(m.title)
+            '<span style="display:inline-flex;align-items:center;gap:10px;min-width:220px;white-space:normal">'
+            '{}<span>{}</span></span>'.format(
+                '<img src="{}" style="height:40px;width:60px;flex:none;object-fit:cover;border-radius:4px">'.format(
+                    m.cover.thumb
+                )
+                if m.cover
+                else "",
+                escape(m.title),
+            )
         ),
+        Property.created_at: lambda m, a: f"{m.created_at:%d.%m.%Y %H:%M}" if m.created_at else "",
         Property.deal_type: lambda m, a: DEAL_TYPES.get(m.deal_type, m.deal_type),
         Property.status: lambda m, a: STATUSES.get(m.status, m.status),
         Property.price: lambda m, a: fmt_price(m.price),
@@ -252,7 +259,7 @@ class LeadAdmin(ModelView, model=Lead):
         Lead.listing: "Объект",
         Lead.is_processed: "Обработана",
     }
-    column_formatters = {Lead.kind: lambda m, a: LEAD_KINDS.get(m.kind, m.kind)}
+    column_formatters = {Lead.kind: lambda m, a: LEAD_KINDS.get(m.kind, m.kind), Lead.created_at: lambda m, a: f"{m.created_at:%d.%m.%Y %H:%M}" if m.created_at else ""}
     column_formatters_detail = column_formatters
     form_columns = [Lead.is_processed, Lead.message]
     form_args = {"message": {"show_chars_count": False}}
