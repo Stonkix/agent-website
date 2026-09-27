@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     telegram: str = "movementhome"  # без @
     max_url: str = "https://web.max.ru/356030245"  # пусто — кнопки Max не показываются
     office_address: str = ""
-    legal_info: str = "Самозанятая Кошелева Н.В., ИНН 400301000301"
+    legal_info: str = "Самозанятая Кошелева Н. В., ИНН 400301000301"
     yandex_metrika_id: str = ""
     # Ключ JavaScript API и Геокодера: developer.tech.yandex.ru → «Подключить API»
     yandex_maps_api_key: str = ""
