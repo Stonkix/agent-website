@@ -293,3 +293,20 @@ def test_heic_upload(client):
         assert len(p.photos) == 1
         ph = p.photos[0]
     assert Image.open(images.property_dir(p.id) / f"{ph.name}_full.webp").format == "WEBP"
+
+
+def test_admin_selects_empty_by_default(client):
+    import re
+
+    _login(client)
+    form = client.get("/admin/property/create").text
+    for field in ("deal_type", "property_type", "status"):
+        select = re.search(rf'<select[^>]*name="{field}"[^>]*>(.*?)</select>', form, re.S).group(1)
+        assert re.search(r'<option selected value="">— Выберите —</option>', select), field
+    r = client.post("/admin/property/create", data={"title": "Без типа", "price": "1", "address": "x",
+                                                     "deal_type": "", "property_type": "", "status": "", "save": "Сохранить"})
+    assert "Выберите значение из списка" in r.text
+    with SessionLocal() as db:
+        assert db.query(Property).filter_by(title="Без типа").count() == 0
+    edit = client.get("/admin/property/edit/1").text
+    assert re.search(r'<option selected value="sale">', edit)

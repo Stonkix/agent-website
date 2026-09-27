@@ -13,6 +13,7 @@ from starlette.datastructures import UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from wtforms import MultipleFileField, SelectField
+from wtforms.validators import DataRequired
 from wtforms.widgets import HiddenInput
 
 from app import admin_password, images, login_guard, profile as profile_store
@@ -87,7 +88,13 @@ class AdminAuth(AuthenticationBackend):
 
 
 def _choices(d: dict[str, str]) -> list[tuple[str, str]]:
-    return list(d.items())
+    # первым идёт пустой пункт: в новой записи ничего не выбрано заранее, выбрать нужно самому
+    return [("", "— Выберите —"), *d.items()]
+
+
+def _required_select(**kwargs) -> dict:
+    """Аргументы выпадающего списка: пусто по умолчанию (не берём значение из модели) и русская ошибка."""
+    return {"default": "", "validators": [DataRequired(message="Выберите значение из списка")], **kwargs}
 
 
 class PropertyAdmin(ModelView, model=Property):
@@ -167,13 +174,13 @@ class PropertyAdmin(ModelView, model=Property):
     form_excluded_columns = [Property.photos, Property.created_at, Property.updated_at]
     form_overrides = {"deal_type": SelectField, "property_type": SelectField, "status": SelectField}
     form_args = {
-        "deal_type": {"choices": _choices(DEAL_TYPES), "label": "Сделка"},
-        "property_type": {"choices": _choices(PROPERTY_TYPES), "label": "Тип"},
-        "status": {
-            "choices": _choices(STATUSES),
-            "label": "Статус",
-            "description": "Для аренды: «Сдается» / «Сдан». Если выбрать не тот — поправится автоматически.",
-        },
+        "deal_type": _required_select(choices=_choices(DEAL_TYPES), label="Сделка"),
+        "property_type": _required_select(choices=_choices(PROPERTY_TYPES), label="Тип"),
+        "status": _required_select(
+            choices=_choices(STATUSES),
+            label="Статус",
+            description="Для аренды: «Сдается» / «Сдан». Если выбрать не тот — поправится автоматически.",
+        ),
         # координаты ставятся меткой на Яндекс.Карте (static/js/admin.js), сами поля скрыты
         "description": {"show_chars_count": False},
         "lat": {"widget": HiddenInput()},
