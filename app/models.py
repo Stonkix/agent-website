@@ -121,7 +121,7 @@ class Property(Base):
 
     @property
     def short_title(self) -> str:
-        """«2-комн. квартира, 54 м²» — для заголовков, OG и Telegram."""
+        """«2-комн. квартира, 54 м²» — для заголовков, OG и писем о заявках."""
         parts = []
         if self.property_type == "flat" and self.rooms is not None:
             parts.append("Квартира-студия" if self.rooms == 0 else f"{self.rooms}-комн. квартира")

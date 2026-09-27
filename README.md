@@ -16,7 +16,7 @@ FastAPI + SQLite + Jinja2 + HTMX + sqladmin. Без Node, без сборки ф
 
 Под капотом:
 - **Фото**: загружаются пачкой в форме объекта → поворот по EXIF, удаление метаданных (в т.ч. GPS с телефона), WebP 800px и 1920px + JPEG 1200×630 для превью в мессенджерах. Порядок и удаление — в разделе «Фото».
-- **Заявки** сохраняются в БД и уходят на почту (SMTP) и/или в Telegram — что настроено в `.env`. Защита от спама: honeypot-поле, лимит по IP, лимиты в nginx.
+- **Заявки** сохраняются в БД и уходят на почту (SMTP). Защита от спама: honeypot-поле, лимит по IP, лимиты в nginx.
 - **SEO**: короткие адреса `/catalog/12`, Open Graph, `RealEstateListing` и `RealEstateAgent` (Schema.org), sitemap с `lastmod`.
 - **Статусы**: «В продаже» / «Продано» для продажи, «Сдается» / «Сдан» для аренды. Проданные и сданные уходят из каталога в «Недавние сделки». Бейджи «Новинка» (14 дней) и «Снижена цена».
 - **Админка**: метка объекта ставится кликом на Яндекс.Карте, фото перетаскиваются мышкой пачкой.
@@ -44,7 +44,6 @@ echo DEBUG=true> .env
 4. Тексты в `app/templates/index.html` и `about.html` — это заготовки: преимущества, цены, биография.
 5. Яндекс.Карты: ключ «JavaScript API и HTTP Геокодер» на developer.tech.yandex.ru → `YANDEX_MAPS_API_KEY`. Без ключа метку можно ставить кликом, но поиск по адресу не работает.
 6. Почта для заявок: в mail.ru «Настройки → Безопасность → Пароли для внешних приложений» создайте пароль с доступом к SMTP и впишите его в `SMTP_PASSWORD`. Проверка: `.venv/bin/python -m app.mailer` пришлёт тестовое письмо.
-7. Telegram (необязательно): создайте бота у @BotFather → `TELEGRAM_BOT_TOKEN`; напишите боту что-нибудь, узнайте свой id у @userinfobot → `TELEGRAM_CHAT_ID`. Можно добавить бота в рабочую группу и указать id группы.
 
 ## Деплой на VDS (Ubuntu 24.04)
 
@@ -91,7 +90,7 @@ app/
   models.py      Property, Photo, Lead, Review
   admin.py       sqladmin: формы, загрузка фото, авторизация
   images.py      обработка фото (Pillow)
-  telegram.py    отправка заявок
+  mailer.py      отправка заявок на почту
   routes/        pages (страницы и фильтры), leads (формы), seo (sitemap/robots)
   templates/     Jinja2; partials/ — куски для HTMX
   static/        css, js, img, vendor (htmx, leaflet)

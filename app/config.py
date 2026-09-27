@@ -19,9 +19,6 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str = "admin"
 
-    telegram_bot_token: str = ""
-    telegram_chat_id: str = ""
-
     # Заявки на почту. Для mail.ru нужен «пароль для внешних приложений», не обычный пароль от ящика
     smtp_host: str = "smtp.mail.ru"
     smtp_port: int = 465

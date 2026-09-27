@@ -7,7 +7,6 @@ os.environ.update(
     DEBUG="true",
     DATABASE_URL=f"sqlite:///{_tmp}/test.db",
     MEDIA_DIR=f"{_tmp}/media",
-    TELEGRAM_BOT_TOKEN="",
 )
 
 import pytest  # noqa: E402

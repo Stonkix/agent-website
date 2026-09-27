@@ -5,7 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
-from app import mailer, telegram
+from app import mailer
 from app.db import get_db
 from app.models import LEAD_KINDS, Lead, Property
 from app.templating import templates
@@ -77,7 +77,5 @@ def create_lead(
     )
     db.add(lead)
     db.commit()
-    # каждый канал срабатывает, только если настроен в .env; сбой одного не мешает другому
     background.add_task(mailer.send_lead, lead, prop)
-    background.add_task(telegram.send_message, telegram.format_lead(lead, prop))
     return respond("partials/lead_success.html")
