@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
 
+    # Заявки на почту. Для mail.ru нужен «пароль для внешних приложений», не обычный пароль от ящика
+    smtp_host: str = "smtp.mail.ru"
+    smtp_port: int = 465
+    smtp_user: str = ""  # ящик-отправитель, например 89036964555@mail.ru
+    smtp_password: str = ""
+    leads_email: str = ""  # куда слать заявки; пусто — на EMAIL из контактов
+
     # Данные риелтора — выводятся в шапке, подвале, контактах и PDF/OG
     site_name: str = "Наталья Кошелева — недвижимость"
     realtor_name: str = "Наталья Кошелева"
@@ -38,6 +45,10 @@ class Settings(BaseSettings):
     yandex_maps_api_key: str = ""
     map_center_lat: float = 54.513845  # центр карты в админке, пока метка не поставлена
     map_center_lon: float = 36.261215
+
+    @property
+    def leads_email_to(self) -> str:
+        return self.leads_email or self.email
 
     @property
     def phone_href(self) -> str:

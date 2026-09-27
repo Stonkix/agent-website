@@ -204,3 +204,32 @@ def test_property_photos_reorder_and_delete(client):
         left = [ph.id for ph in db.query(Photo).filter_by(property_id=1).order_by(Photo.sort)]
     assert left == [third, first]
     assert not list(images.property_dir(1).glob(f"{deleted_name}_*"))  # файлы удалённого фото стёрты
+
+
+def test_lead_email_sent(client, monkeypatch):
+    from app import mailer
+    from app.config import settings
+
+    sent = []
+    monkeypatch.setattr(settings, "smtp_user", "site@example.com")
+    monkeypatch.setattr(settings, "smtp_password", "app-password")
+    monkeypatch.setattr(mailer, "_smtp_send", sent.append)
+    r = client.post("/lead", data={"name": "Мария\r\nBcc: x@evil.com", "phone": "+7 912 000-11-22", "consent": "true",
+                                   "kind": "viewing", "property_id": "1", "message": "Когда можно посмотреть?"},
+                    headers={"HX-Request": "true"})
+    assert "заявка отправлена" in r.text
+    assert len(sent) == 1
+    msg = sent[0]
+    assert msg["To"] == settings.email and "Запись на просмотр" in msg["Subject"]
+    assert "\n" not in msg["Subject"] and msg["Bcc"] is None  # перевод строки в имени не создаёт заголовков
+    body = msg.get_body(("plain",)).get_content()
+    assert "+79120000011" not in body and "+79120001122" in body and "/catalog/1" in body
+
+
+def test_lead_email_skipped_when_not_configured(monkeypatch):
+    from app import mailer
+
+    called = []
+    monkeypatch.setattr(mailer, "_smtp_send", called.append)
+    mailer.send_lead(Lead(kind="callback", name="X", phone="+79000000000"), None)
+    assert called == []
