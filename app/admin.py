@@ -15,7 +15,7 @@ from starlette.responses import RedirectResponse
 from wtforms import MultipleFileField, SelectField
 from wtforms.widgets import HiddenInput
 
-from app import images, profile as profile_store
+from app import images, login_guard, profile as profile_store
 from app.config import BASE_DIR, settings
 from app.db import SessionLocal, engine
 from app.models import (
@@ -42,14 +42,38 @@ def _same(given: object, expected: str) -> bool:
 
 
 class AdminAuth(AuthenticationBackend):
-    async def login(self, request: Request) -> bool:
+    templates = None  # шаблоны админки, выставляются в setup_admin
+
+    async def _login_page(self, request: Request, error: str, status: int, locked: bool = False):
+        return await self.templates.TemplateResponse(
+            request, "sqladmin/login.html", {"error": error, "locked": locked}, status_code=status
+        )
+
+    async def login(self, request: Request):
+        ip = request.client.host if request.client else "unknown"  # за nginx — реальный IP (--proxy-headers)
+        until = login_guard.blocked_until(ip)
+        if until:
+            return await self._login_page(
+                request, f"Слишком много неудачных попыток. Вход заблокирован до {until:%d.%m.%Y %H:%M}.", 429, locked=True
+            )
+
         form = await request.form()
         ok = _same(form.get("username"), settings.admin_username) & _same(
             form.get("password"), settings.admin_password
         )
         if not ok:
             await asyncio.sleep(1)  # замедляем перебор пароля
-            return False
+            left, until = login_guard.register_failure(ip)
+            if until:
+                return await self._login_page(
+                    request,
+                    f"Неверный логин или пароль. Попытки закончились — вход заблокирован до {until:%d.%m.%Y %H:%M}.",
+                    429,
+                    locked=True,
+                )
+            return await self._login_page(request, f"Неверный логин или пароль. Осталось попыток: {left}.", 400)
+
+        login_guard.reset(ip)
         request.session["admin"] = True
         return True
 
@@ -320,14 +344,16 @@ class PortfolioAdmin(BaseView):
 
 
 def setup_admin(app) -> Admin:
+    auth = AdminAuth(secret_key=settings.secret_key, https_only=not settings.debug)
     admin = Admin(
         app,
         engine,
-        title=f"{settings.realtor_name} — админка",
+        title="Панель управления сайтом",
         templates_dir=str(BASE_DIR / "app" / "templates"),  # переопределения в templates/sqladmin/
-        authentication_backend=AdminAuth(secret_key=settings.secret_key, https_only=not settings.debug),
+        authentication_backend=auth,
         i18n_config=I18nConfig(default_locale="ru"),
     )
+    auth.templates = admin.templates
     admin.templates.env.globals["settings"] = settings
     admin.templates.env.globals["static_v"] = site_templates.env.globals["static_v"]
     for view in (PropertyAdmin, LeadAdmin, ReviewAdmin):

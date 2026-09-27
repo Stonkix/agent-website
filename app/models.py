@@ -222,3 +222,14 @@ class Profile(Base):
     @property
     def paragraphs(self) -> list[str]:
         return [p.strip() for p in self.about.split("\n\n") if p.strip()]
+
+
+class LoginAttempt(Base):
+    """Неудачные попытки входа в админку по IP (см. app/login_guard.py)."""
+
+    __tablename__ = "login_attempts"
+
+    ip: Mapped[str] = mapped_column(String(64), primary_key=True)
+    failures: Mapped[int] = mapped_column(default=0)
+    last_failure_at: Mapped[datetime | None] = mapped_column(default=None)
+    blocked_until: Mapped[datetime | None] = mapped_column(default=None)

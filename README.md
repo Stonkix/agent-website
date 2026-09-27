@@ -79,6 +79,8 @@ SSH: вход по ключу, `PasswordAuthentication no` и `PermitRootLogin n
 
 Обновление: `git pull && sudo systemctl restart rieltor`.
 
+Вход в админку: 5 неверных паролей с одного IP — блокировка на 24 часа. Снять все блокировки: `cd /srv/rieltor && .venv/bin/python -m app.login_guard --reset`.
+
 Для 152-ФЗ: VDS должен быть в РФ, а оператору ПДн нужно подать уведомление в Роскомнадзор.
 
 ## Структура

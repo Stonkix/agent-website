@@ -131,7 +131,7 @@ def test_admin_login_with_cyrillic_password(client, monkeypatch):
 
     monkeypatch.setattr(settings, "admin_password", "надёжный-пароль")
     bad = client.post("/admin/login", data={"username": settings.admin_username, "password": "не тот"})
-    assert bad.status_code == 400
+    assert bad.status_code == 400 and "Осталось попыток" in bad.text
     ok = client.post("/admin/login", data={"username": settings.admin_username, "password": "надёжный-пароль"},
                      follow_redirects=False)
     assert ok.status_code == 302
@@ -232,3 +232,22 @@ def test_lead_email_skipped_when_not_configured(monkeypatch):
     monkeypatch.setattr(mailer, "_smtp_send", called.append)
     mailer.send_lead(Lead(kind="callback", name="X", phone="+79000000000"), None)
     assert called == []
+
+
+def test_login_lockout_after_five_failures(client):
+    from app import login_guard
+    from app.config import settings
+
+    try:
+        for left in (4, 3, 2, 1):
+            r = client.post("/admin/login", data={"username": "admin", "password": "wrong"})
+            assert r.status_code == 400 and f"Осталось попыток: {left}" in r.text
+        r = client.post("/admin/login", data={"username": "admin", "password": "wrong"})
+        assert r.status_code == 429 and "заблокирован до" in r.text
+        # даже верный пароль не пускает, пока идёт блокировка
+        r = client.post("/admin/login", data={"username": settings.admin_username, "password": settings.admin_password},
+                        follow_redirects=False)
+        assert r.status_code == 429
+    finally:
+        login_guard.reset()
+    _login(client)  # после снятия блокировки вход снова работает
